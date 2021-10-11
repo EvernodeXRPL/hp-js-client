@@ -1,13 +1,20 @@
 {
     "name": "hotpocket-js-client",
-    "version": "0.0.1-alpha",
+    "version": "0.5.0",
     "scripts": {
-        "build-node": "ncc build src/index.js -e libsodium-wrappers -e blake3 -e ws -e bson -o dist/",
-        "bundle-node": "npm run build && ./clean-pkg.sh",
-        "publish-node": "npm run bundle && npm publish dist"
+        "build-node": "mkdir -p dist-node && cp src/hp-client-lib.js dist-node/index.js && ./clean-pkg.sh",
+        "publish-node": "npm run build-node && npm publish dist-node",
+        "merge-browser": "rm -f -r dist-browser ; mkdir -p dist-browser && cp src/bson-browser.js dist-browser/merged.js && cat src/hp-client-lib.js >> dist-browser/merged.js",
+        "minify-browser": "terser --compress --mangle reserved=['Binary','Buffer'] -- dist-browser/merged.js > dist-browser/hotpocket-js-client.min.js && rm dist-browser/merged.js",
+        "build-browser": "npm run merge-browser && npm run minify-browser"
     },
     "dependencies": {
-        "eccrypto": "1.1.6",
-        "ripple-lib": "1.9.8"
+        "libsodium-wrappers": "0.7.9",
+        "blake3": "2.1.4",
+        "ws": "8.2.3",
+        "bson": "4.5.3"
+    },
+    "devDependencies": {
+        "terser": "5.9.0"
     }
 }

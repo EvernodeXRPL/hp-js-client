@@ -1,6 +1,6 @@
 {
     "name": "hotpocket-example-client",
     "dependencies": {
-        "evernode-js-client": "0.0.1-alpha"
+        "hotpocket-js-client": "0.5.0"
     }
 }

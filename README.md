@@ -1,16 +1,13 @@
 # Hot Pocket javascript client
-Hot Pocket javascript client for NodeJs and Browser.
+Hot Pocket javascript client library to support json and bson protocols in NodeJs and Browser environments.
 
-## Prerequisites
-```
-npm i -g @vercel/ncc
-```
+# NodeJs
 
 ## Publish to npm
 ```
 npm install
 npm login
-npm run publish
+npm run publish-node
 ```
 
 ## Testing example client
@@ -22,3 +19,7 @@ node client.js
 
 ## NPM package
 https://www.npmjs.com/package/hotpocket-js-client
+
+
+# Browser
+For BSON support in browser, a slightly modified version of https://www.npmjs.com/package/bson is used. The minified library includes this bson support library as well.
