@@ -1,0 +1,13 @@
+{
+    "name": "hotpocket-js-client",
+    "version": "0.0.1-alpha",
+    "scripts": {
+        "build-node": "ncc build src/index.js -e libsodium-wrappers -e blake3 -e ws -e bson -o dist/",
+        "bundle-node": "npm run build && ./clean-pkg.sh",
+        "publish-node": "npm run bundle && npm publish dist"
+    },
+    "dependencies": {
+        "eccrypto": "1.1.6",
+        "ripple-lib": "1.9.8"
+    }
+}
