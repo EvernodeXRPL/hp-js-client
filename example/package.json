@@ -1,6 +1,6 @@
 {
     "name": "hotpocket-example-client",
     "dependencies": {
-        "hotpocket-js-client": "0.5.0"
+        "hotpocket-js-client": "0.5.1"
     }
 }

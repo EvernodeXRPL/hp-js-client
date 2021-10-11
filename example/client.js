@@ -1,6 +1,6 @@
 const HotPocket = require('hotpocket-js-client');
 
-const hpServer = 'wss://localhost:8080'
+const hpServer = 'wss://localhost:8080';
 
 async function example() {
 
