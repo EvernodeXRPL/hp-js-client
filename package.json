@@ -5,7 +5,7 @@
         "merge-browser": "rm -f -r dist ; mkdir -p dist && cp src/bson-browser.js dist/browser.js && cat src/hp-client-lib.js >> dist/browser.js",
         "minify-browser": "terser --compress --mangle reserved=['Binary','Buffer'] -- dist/browser.js > dist/browser.min.js",
         "build-browser": "npm run merge-browser && npm run minify-browser",
-        "build-node": "cp src/hp-client-lib.js dist/index.js && ./clean-pkg.sh",
+        "build-node": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && ./clean-pkg.sh",
         "publish": "npm run build-browser && npm run build-node && npm publish dist"
     },
     "dependencies": {

@@ -49,7 +49,6 @@
     const events = {
         disconnect: "disconnect",
         contractOutput: "contract_output",
-        contractReadResponse: "contract_read_response",
         connectionChange: "connection_change",
         unlChange: "unl_change",
         ledgerEvent: "ledger_event",
@@ -352,7 +351,6 @@
 
             emitter.clear(events.connectionChange);
             emitter.clear(events.contractOutput);
-            emitter.clear(events.contractReadResponse);
 
             // Close all nodes connections.
             await Promise.all(nodes.filter(n => n.connection).map(n => n.connection.close()));
@@ -372,8 +370,9 @@
             return getMultiConnectionResult(con => con.submitContractInput(input, nonce, maxLedger, isOffset), 1);
         }
 
-        this.sendContractReadRequest = (request) => {
-            return executeMultiConnectionFunc(con => con.sendContractReadRequest(request));
+        this.submitContractReadRequest = (request, id = null, timeout = 15000) => {
+            id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
+            return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
         }
 
         this.getStatus = () => {
@@ -420,6 +419,7 @@
         let statResponseResolvers = [];
         let lclResponseResolvers = [];
         let contractInputResolvers = {}; // Contract input status-awaiting resolvers (keyed by input hash).
+        let readRequestResolvers = {}; // Contract read request reply-awaiting resolvers (keyed by request id).
         let ledgerQueryResolvers = {}; // Message resolvers that uses request/reply associations.
 
         // Calcualtes the blake3 hash of all array items.
@@ -620,7 +620,13 @@
         const contractMessageHandler = (m) => {
 
             if (m.type == "contract_read_response") {
-                emitter && emitter.emit(events.contractReadResponse, msgHelper.deserializeValue(m.content));
+                const requestId = m.reply_for;
+                const resolver = readRequestResolvers[requestId];
+                if (resolver) {
+                    clearTimeout(resolver.timer);
+                    resolver.resolver(msgHelper.deserializeValue(m.content));
+                    delete readRequestResolvers[requestId];
+                }
             }
             else if (m.type == "contract_input_status") {
                 const inputHashHex = msgHelper.stringifyValue(m.input_hash);
@@ -815,6 +821,12 @@
             }));
             contractInputResolvers = {};
 
+            Object.values(readRequestResolvers).forEach(resolver => {
+                clearTimeout(resolver.timer);
+                resolver.resolver(null);
+            });
+            readRequestResolvers = {};
+
             this.onClose && this.onClose();
             closeResolver && closeResolver();
         }
@@ -944,14 +956,24 @@
             };
         }
 
-        this.sendContractReadRequest = (request) => {
+        this.submitContractReadRequest = (request, id, timeout) => {
 
             if (connectionStatus != 2)
                 return Promise.resolve();
 
-            const msg = msgHelper.createReadRequest(request);
-            wsSend(msgHelper.serializeObject(msg));
-            return Promise.resolve();
+            // Start waiting for this request's reply.
+            return new Promise(resolve => {
+
+                const timer = setTimeout(() => {
+                    resolve(null);
+                    delete readRequestResolvers[id];
+                }, timeout);
+
+                readRequestResolvers[id] = { resolver: resolve, timer: timer };
+
+                const msg = msgHelper.createReadRequest(request, id);
+                wsSend(msgHelper.serializeObject(msg));
+            });
         }
 
         this.subscribe = (channel) => {
@@ -1096,12 +1118,13 @@
             }
         }
 
-        this.createReadRequest = (request) => {
+        this.createReadRequest = (request, id) => {
             if (request.length == 0)
                 return null;
 
             return {
                 type: "contract_read_request",
+                id: id,
                 content: this.serializeInput(request)
             }
         }
