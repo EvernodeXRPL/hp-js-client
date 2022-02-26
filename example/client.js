@@ -1,6 +1,6 @@
 const HotPocket = require('hotpocket-js-client');
 
-const hpServer = 'wss://localhost:8080';
+const hpServer = 'wss://localhost:8081';
 
 async function example() {
 
@@ -56,12 +56,6 @@ async function example() {
         });
     })
 
-    // This will get fired when contract sends a read response.
-    hpc.on(HotPocket.events.contractReadResponse, (o) => {
-        const outputLog = o.length <= 512 ? o : `[Big output (${o.length / 1024} KB)]`;
-        console.log("Read response>> " + outputLog);
-    })
-
     // This will get fired when the unl public key list changes.
     hpc.on(HotPocket.events.unlChange, (unl) => {
         console.log("New unl received:");
@@ -92,6 +86,14 @@ async function example() {
 
     const stat = await hpc.getStatus();
     console.log(stat);
+
+    const response = await hpc.submitContractReadRequest("My read request");
+    console.log(response);
+
+    const input = await hpc.submitContractInput("My input");
+    console.log(input.hash);
+    const submissionResult = await input.submissionStatus;
+    console.log(submissionResult);
 
     await hpc.close();
 }

@@ -3,7 +3,7 @@
 <head>
     <title>HotPocket browser example</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/hotpocket-js-client/browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hotpocket-js-client@0.5.2/browser.min.js"></script>
 
     <!--Hot Pocket client library requires libsodium js for cryptographic operations.-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/libsodium-wrappers/0.5.4/sodium.min.js"
@@ -13,7 +13,7 @@
     <script>
         async function testFunc() {
 
-            const hpServer = "wss://localhost:8080";
+            const hpServer = "wss://localhost:8081";
 
             const keys = await HotPocket.generateKeys(); // Can provide existing hex private key as parameter as well.
 
@@ -58,11 +58,6 @@
                 r.outputs.forEach(o => console.log(`Output (ledger:${r.ledgerSeqNo})>> ${o}`));
             })
 
-            // This will get fired when contract sends a read response.
-            hpc.on(HotPocket.events.contractReadResponse, (response) => {
-                console.log("Read response>> " + response);
-            })
-
             // This will get fired when the unl public key list changes.
             hpc.on(HotPocket.events.unlChange, (unl) => {
                 console.log("New unl received:");
@@ -87,6 +82,14 @@
 
             const stat = await hpc.getStatus();
             console.log(stat);
+
+            const response = await hpc.submitContractReadRequest("My read request");
+            console.log(response);
+
+            const input = await hpc.submitContractInput("My input");
+            console.log(input.hash);
+            const submissionResult = await input.submissionStatus;
+            console.log(submissionResult);
 
             await hpc.close();
         }
