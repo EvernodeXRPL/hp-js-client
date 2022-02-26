@@ -1,6 +1,6 @@
 {
     "name": "hotpocket-js-client",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "scripts": {
         "merge-browser": "rm -f -r dist ; mkdir -p dist && cp src/bson-browser.js dist/browser.js && cat src/hp-client-lib.js >> dist/browser.js",
         "minify-browser": "terser --compress --mangle reserved=['Binary','Buffer'] -- dist/browser.js > dist/browser.min.js",
