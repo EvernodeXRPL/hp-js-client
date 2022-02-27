@@ -587,6 +587,13 @@
             }
             else if (connectionStatus == 1 && serverChallenge && m.type == "server_challenge_response" && m.sig && m.pubkey) {
 
+                // If trustedKeys has been specified and server key is not among them, fail the connection.
+                const trustedKeys = getTrustedKeys();
+                if (trustedKeys && !trustedKeys[m.pubkey]) {
+                    liblog(1, `${server} is not among the trusted servers.`);
+                    return false;
+                }
+
                 // Verify server challenge response.
                 const stringToVerify = serverChallenge + reportedContractId + reportedContractVersion;
                 const serverPubkeyHex = m.pubkey.substring(2); // Skip 'ed' prefix;
