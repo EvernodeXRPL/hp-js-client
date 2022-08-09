@@ -1,5 +1,5 @@
-# Hot Pocket javascript client
-Hot Pocket javascript client library to support json and bson protocols in NodeJs and Browser environments.
+# HotPocket javascript client
+HotPocket javascript client library to support json and bson protocols in NodeJs and Browser environments.
 
 ### Publish to npm
 ```

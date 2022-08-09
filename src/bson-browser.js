@@ -1,5 +1,5 @@
 // Adopted from https://www.npmjs.com/package/bson
-// Modified BSON lib for Hot Pocket to expose Buffer polyfill.
+// Modified BSON lib for HotPocket to expose Buffer polyfill.
 
 var BSON = (function (exports) {
     'use strict';

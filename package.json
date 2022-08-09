@@ -1,12 +1,18 @@
 {
     "name": "hotpocket-js-client",
-    "version": "0.5.3",
+    "description": "Javascript client library to interact with HotPocket smart contracts.",
+    "keywords": [
+        "HotPocket"
+    ],
+    "homepage": "https://github.com/HotPocketDev/hp-js-client",
+    "license": "MIT",
+    "version": "0.5.4",
     "scripts": {
         "merge-browser": "rm -f -r dist ; mkdir -p dist && cp src/bson-browser.js dist/browser.js && cat src/hp-client-lib.js >> dist/browser.js",
         "minify-browser": "terser --compress --mangle reserved=['Binary','Buffer'] -- dist/browser.js > dist/browser.min.js",
         "build-browser": "npm run merge-browser && npm run minify-browser",
-        "build-node": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && ./clean-pkg.sh",
-        "publish": "npm run build-browser && npm run build-node && npm publish dist"
+        "build-node": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && cp npm-readme.md dist/README.md && ./clean-pkg.sh",
+        "publish": "npm run build-browser && npm run build-node && npm publish ./dist"
     },
     "dependencies": {
         "libsodium-wrappers": "0.7.9",
@@ -15,6 +21,6 @@
         "bson": "4.5.3"
     },
     "devDependencies": {
-        "terser": "5.9.0"
+        "terser": "5.14.2"
     }
 }

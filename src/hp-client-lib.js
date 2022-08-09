@@ -1,5 +1,5 @@
 /**
- * Hot Pocket javascript client library.
+ * HotPocket javascript client library.
  * Version 0.5.0
  * NodeJs: const HotPocket = require('hotpocket-js-client')
  * Browser: window.HotPocket
@@ -172,7 +172,7 @@
         const nodes = Object.keys(serversLookup).map(s => {
             return {
                 server: s, // Server address.
-                connection: null, // Hot Pocket connection (if any).
+                connection: null, // HotPocket connection (if any).
                 lastActivity: 0 // Last connection activity timestamp.
             }
         });
@@ -552,7 +552,7 @@
             if (connectionStatus == 0 && m.type == "user_challenge" && m.hp_version && m.contract_id) {
 
                 if (!m.hp_version.startsWith(supportedHpVersion)) {
-                    liblog(1, `Incompatible Hot Pocket server version. Expected:${supportedHpVersion}* Got:${m.hp_version}`);
+                    liblog(1, `Incompatible HotPocket server version. Expected:${supportedHpVersion}* Got:${m.hp_version}`);
                     return false;
                 }
                 else if (!m.contract_id) {
@@ -1077,7 +1077,7 @@
         }
 
         this.createUserChallengeResponse = (userChallenge, serverChallenge, msgProtocol) => {
-            // For challenge response encoding Hot Pocket always uses json.
+            // For challenge response encoding HotPocket always uses json.
             // Challenge response will specify the protocol to use for contract messages.
             const sigBytes = sodium.crypto_sign_detached(userChallenge, keys.privateKey.slice(1));
 
