@@ -760,6 +760,7 @@
             // In browser, text(json) mode requires the buffer to be "decoded" to text before JSON parsing.
             const isTextMode = (connectionStatus < 2 || protocol == protocols.json);
             const data = (isBrowser && isTextMode) ? textDecoder.decode(rcvd.data) : rcvd.data;
+            let m
 
             try {
                 m = msgHelper.deserializeMessage(data);
