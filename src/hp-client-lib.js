@@ -42,7 +42,7 @@
     const protocols = {
         json: "json",
         bson: "bson"
-    }
+    };
     Object.freeze(protocols);
 
     /*--- Included in public interface. ---*/
@@ -53,7 +53,7 @@
         unlChange: "unl_change",
         ledgerEvent: "ledger_event",
         healthEvent: "health_event"
-    }
+    };
     Object.freeze(events);
 
     /*--- Included in public interface. ---*/
@@ -61,7 +61,7 @@
         unlChange: "unl_change",
         ledgerEvent: "ledger_event",
         healthEvent: "health_event"
-    }
+    };
     Object.freeze(notificationChannels);
 
     /*--- Included in public interface. ---*/
@@ -85,7 +85,7 @@
             return {
                 privateKey: binPrivateKey,
                 publicKey: binPublicKey
-            }
+            };
         }
         else {
             const binPrivateKey = hexToUint8Array(privateKeyHex);
@@ -98,9 +98,9 @@
             return {
                 privateKey: binPrivateKey,
                 publicKey: binPublicKey
-            }
+            };
         }
-    }
+    };
 
     /*--- Included in public interface. ---*/
     const createClient = async (servers, clientKeys, options) => {
@@ -140,7 +140,7 @@
         servers && servers.forEach(s => {
             const url = s.trim();
             if (url.length > 0)
-                serversLookup[url] = true
+                serversLookup[url] = true;
         });
         if (Object.keys(serversLookup).length == 0)
             throw "servers not specified.";
@@ -151,7 +151,7 @@
         opt.trustedServerKeys && opt.trustedServerKeys.sort().forEach(k => {
             const key = k.trim();
             if (key.length > 0)
-                trustedKeysLookup[key] = true
+                trustedKeysLookup[key] = true;
         });
         // If there are no keys specified, mark the lookup as null, indicating that we are not intersted in
         // checking for trusted servers.
@@ -159,7 +159,7 @@
             trustedKeysLookup = null;
 
         return new HotPocketClient(opt.contractId, opt.contractVersion, clientKeys, serversLookup, trustedKeysLookup, opt.protocol, opt.requiredConnectionCount, opt.connectionTimeoutMs);
-    }
+    };
 
     function HotPocketClient(contractId, contractVersion, clientKeys, serversLookup, trustedKeysLookup, protocol, requiredConnectionCount, connectionTimeoutMs) {
 
@@ -174,7 +174,7 @@
                 server: s, // Server address.
                 connection: null, // HotPocket connection (if any).
                 lastActivity: 0 // Last connection activity timestamp.
-            }
+            };
         });
 
         // Default subscriptions.
@@ -269,7 +269,7 @@
                         // Issue subscription request for any subscriptions we have to maintain.
                         // We don't wait for completion because we just need to issue the request to the server.
                         for (const [channel, enabled] of Object.entries(subscriptions)) {
-                            if (enabled) n.connection.subscribe(channel)
+                            if (enabled) n.connection.subscribe(channel);
                         }
                     }
                 });
@@ -281,7 +281,7 @@
 
                 currentConnectionCount++;
             }
-        }
+        };
 
         /**
          * Executes the provided func on all connections and returns the collected results.
@@ -304,7 +304,7 @@
                 return results.length == 0 ? null : results[0];
             else
                 return results;
-        }
+        };
 
         /**
          * Executes the provided func on all connections.
@@ -321,7 +321,7 @@
 
             const connections = nodes.filter(n => n.connection && n.connection.isConnected()).map(n => n.connection).slice(0, maxConnections);
             return Promise.all(connections.map(c => func(c)));
-        }
+        };
 
         this.connect = () => {
 
@@ -334,8 +334,8 @@
 
             return new Promise(resolve => {
                 initialConnectSuccess = resolve;
-            })
-        }
+            });
+        };
 
         this.close = async () => {
 
@@ -355,47 +355,47 @@
             // Close all nodes connections.
             await Promise.all(nodes.filter(n => n.connection).map(n => n.connection.close()));
             nodes.forEach(n => n.connection = null);
-        }
+        };
 
         this.on = (event, listener) => {
             emitter.on(event, listener);
-        }
+        };
 
         this.clear = (event) => {
             emitter.clear(event);
-        }
+        };
 
         this.submitContractInput = (input, nonce = null, maxLedger = null, isOffset = true) => {
             // We always only submit contract input to a single node (even if we are connected to multiple nodes).
             return getMultiConnectionResult(con => con.submitContractInput(input, nonce, maxLedger, isOffset), 1);
-        }
+        };
 
         this.submitContractReadRequest = (request, id = null, timeout = 15000) => {
             id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
             return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
-        }
+        };
 
         this.getStatus = () => {
             return getMultiConnectionResult(con => con.getStatus());
-        }
+        };
 
         this.getLcl = () => {
             return getMultiConnectionResult(con => con.getLcl());
-        }
+        };
 
         this.subscribe = (channel) => {
             subscriptions[channel] = true;
             return executeMultiConnectionFunc(con => con.subscribe(channel));
-        }
+        };
 
         this.unsubscribe = (channel) => {
             subscriptions[channel] = false;
             return executeMultiConnectionFunc(con => con.unsubscribe(channel));
-        }
+        };
 
         this.getLedgerBySeqNo = (seqNo, includeInputs, includeOutputs) => {
             return getMultiConnectionResult(con => con.getLedgerBySeqNo(seqNo, includeInputs, includeOutputs));
-        }
+        };
     }
 
     function HotPocketConnection(
@@ -427,7 +427,7 @@
             const hash = blake3.createHash();
             arr.forEach(item => hash.update(item));
             return new Uint8Array(hash.digest());
-        }
+        };
 
         // Get root hash of the given merkle hash tree. (called recursively)
         // Merkle hash tree indicates the collapsed output hashes of this round for all users.
@@ -471,7 +471,7 @@
 
             // Return a tuple of whether self hash was found and the root hash of the provided merkle tree.
             return [selfHashFound, getHash(listToHash)];
-        }
+        };
 
         // Verifies whether the provided root hash has enough signatures from unl.
         const validateHashSignatures = (rootHash, signatures, unlKeysLookup) => {
@@ -485,7 +485,7 @@
             const passedKeys = {};
 
             // 'signatures' is an array of pairs of [pubkey, signature]
-            for (pair of signatures) {
+            for (const pair of signatures) {
                 const pubkeyHex = msgHelper.stringifyValue(pair[0]); // Gets the pubkey hex to use for unl lookup key.
 
                 // Get the signature and issuer pubkey bytes based on the data type.
@@ -501,7 +501,7 @@
             // Check the percentage of unl keys that passed the signature check.
             const passed = Object.keys(passedKeys).length;
             return ((passed / totalUnl) >= outputValidationPassThreshold);
-        }
+        };
 
         const verifyContractOutputTrust = (msg, trustedKeys) => {
 
@@ -525,7 +525,7 @@
             }
 
             return false;
-        }
+        };
 
         const processUnlUpdate = (unl, isHandshake) => {
 
@@ -545,7 +545,7 @@
 
             if (!isHandshake)
                 emitter && emitter.emit(events.unlChange, unl);
-        }
+        };
 
         const handshakeMessageHandler = (m) => {
 
@@ -622,7 +622,7 @@
             liblog(1, `${server} invalid message during handshake. Connection status:${connectionStatus}`);
             liblog(0, m);
             return false;
-        }
+        };
 
         const contractMessageHandler = (m) => {
 
@@ -639,7 +639,7 @@
                 const inputHashHex = msgHelper.stringifyValue(m.input_hash);
                 const resolver = contractInputResolvers[inputHashHex];
                 if (resolver) {
-                    const result = { status: m.status }
+                    const result = { status: m.status };
 
                     if (m.status == "accepted") {
                         result.ledgerSeqNo = m.ledger_seq_no;
@@ -685,7 +685,7 @@
                         currentUnl: m.current_unl.map(u => msgHelper.deserializeValue(u)),
                         peers: m.peers
                     });
-                })
+                });
                 statResponseResolvers = [];
             }
             else if (m.type == "lcl_response") {
@@ -694,7 +694,7 @@
                         ledgerSeqNo: m.ledger_seq_no,
                         ledgerHash: msgHelper.deserializeValue(m.ledger_hash)
                     });
-                })
+                });
                 lclResponseResolvers = [];
             }
             else if (m.type == "unl_change") {
@@ -725,7 +725,7 @@
                                     hash: msgHelper.deserializeValue(i.hash),
                                     nonce: i.nonce,
                                     blob: msgHelper.deserializeValue(i.blob)
-                                }
+                                };
                             });
                         }
 
@@ -735,14 +735,14 @@
                                     pubkey: msgHelper.deserializeValue(o.pubkey),
                                     hash: msgHelper.deserializeValue(o.hash),
                                     blobs: o.blobs.map(b => msgHelper.deserializeValue(b))
-                                }
+                                };
                             });
                         }
 
                         return result;
                     });
                     if (resolver.type == "seq_no")
-                        resolver.resolver(results.length > 0 ? results[0] : null) // Return as a single object rather than an array.
+                        resolver.resolver(results.length > 0 ? results[0] : null); // Return as a single object rather than an array.
                     delete ledgerQueryResolvers[m.reply_for];
                 }
             }
@@ -752,7 +752,7 @@
             }
 
             return true;
-        }
+        };
 
         const messageHandler = async (rcvd) => {
 
@@ -760,6 +760,9 @@
             // In browser, text(json) mode requires the buffer to be "decoded" to text before JSON parsing.
             const isTextMode = (connectionStatus < 2 || protocol == protocols.json);
             const data = (isBrowser && isTextMode) ? textDecoder.decode(rcvd.data) : rcvd.data;
+
+            // Deserialized message.
+            let m;
 
             try {
                 m = msgHelper.deserializeMessage(data);
@@ -787,7 +790,7 @@
                 if (connectionStatus < 2)
                     this.close();
             }
-        }
+        };
 
         const openHandler = () => {
             ws.addEventListener("message", messageHandler);
@@ -798,7 +801,7 @@
                 this.close();
                 handshakeTimer = null;
             }, connectionTimeoutMs);
-        }
+        };
 
         const closeHandler = () => {
 
@@ -836,18 +839,18 @@
 
             this.onClose && this.onClose();
             closeResolver && closeResolver();
-        }
+        };
 
         const errorHandler = (e) => {
             handshakeResolver && handshakeResolver(false);
-        }
+        };
 
         const wsSend = (msg) => {
             if (isString(msg))
                 ws.send(textEncoder.encode(msg));
             else
                 ws.send(msg);
-        }
+        };
 
         this.isConnected = () => {
             return connectionStatus == 2;
@@ -865,7 +868,7 @@
                 ws.addEventListener("error", errorHandler);
                 ws.addEventListener("open", openHandler);
             });
-        }
+        };
 
         this.close = () => {
             if (ws.readyState == WebSocket.OPEN) {
@@ -878,7 +881,7 @@
                 ws.close();
                 return Promise.resolve();
             }
-        }
+        };
 
         this.getStatus = () => {
 
@@ -896,7 +899,7 @@
                 wsSend(msgHelper.serializeObject(msg));
             }
             return p;
-        }
+        };
 
         this.getLcl = () => {
 
@@ -914,7 +917,7 @@
                 wsSend(msgHelper.serializeObject(msg));
             }
             return p;
-        }
+        };
 
         this.submitContractInput = async (input, nonce, maxLedger, isOffset) => {
 
@@ -939,7 +942,7 @@
                 // Acquire the last ledger information and add the specified offset.
                 const lcl = await this.getLcl();
                 if (!lcl)
-                    throw "Error retrieving last closed ledger."
+                    throw "Error retrieving last closed ledger.";
 
                 maxLedger += lcl.ledgerSeqNo;
             }
@@ -961,7 +964,7 @@
                 hash: msgHelper.binaryEncode(inp.hash),
                 submissionStatus: p
             };
-        }
+        };
 
         this.submitContractReadRequest = (request, id, timeout) => {
 
@@ -981,7 +984,7 @@
                 const msg = msgHelper.createReadRequest(request, id);
                 wsSend(msgHelper.serializeObject(msg));
             });
-        }
+        };
 
         this.subscribe = (channel) => {
             if (connectionStatus != 2)
@@ -990,7 +993,7 @@
             const msg = msgHelper.createSubscriptionRequest(channel, true);
             wsSend(msgHelper.serializeObject(msg));
             return Promise.resolve();
-        }
+        };
 
         this.unsubscribe = (channel) => {
             if (connectionStatus != 2)
@@ -999,7 +1002,7 @@
             const msg = msgHelper.createSubscriptionRequest(channel, false);
             wsSend(msgHelper.serializeObject(msg));
             return Promise.resolve();
-        }
+        };
 
         this.getLedgerBySeqNo = (seqNo, includeInputs, includeOutputs) => {
             if (connectionStatus != 2)
@@ -1012,52 +1015,52 @@
                     type: "seq_no",
                     resolver: resolve
                 };
-            })
+            });
 
             wsSend(msgHelper.serializeObject(msg));
             return p;
-        }
+        };
     }
 
     function MessageHelper(keys, protocol) {
 
         this.useProtocol = (p) => {
             protocol = p;
-        }
+        };
 
         this.binaryEncode = (data) => {
             return protocol == protocols.json ?
                 uint8ArrayToHex(data) :
                 (Buffer.isBuffer(data) ? data : Buffer.from(data));
-        }
+        };
 
         this.binaryDecode = (data) => {
             return protocol == protocols.json ? hexToUint8Array(data) : new Uint8Array(data.buffer);
-        }
+        };
 
         this.serializeObject = (obj) => {
             return protocol == protocols.json ? JSON.stringify(obj) : bson.serialize(obj);
-        }
+        };
 
         this.deserializeMessage = (m) => {
             return protocol == protocols.json ? JSON.parse(m) : bson.deserialize(m);
-        }
+        };
 
         this.serializeInput = (input) => {
             return protocol == protocols.json ?
                 (isString(input) ? input : input.toString()) :
                 (Buffer.isBuffer(input) ? input : Buffer.from(input));
-        }
+        };
 
         this.deserializeValue = (val) => {
             return protocol == protocols.json ? val : val.buffer;
-        }
+        };
 
         this.serializeNumber = (num) => {
             // For standard javascript numbers, Bson library does not support serializing large numbers correctly.
             // Hence we have to encode as special bson long type when using bson protocol.
             return (protocol == protocols.json) ? num : bson.Long.fromNumber(num);
-        }
+        };
 
         // Used for generating strings to hold values as js object keys.
         this.stringifyValue = (val) => {
@@ -1069,12 +1072,12 @@
                 return uint8ArrayToHex(new Uint8Array(val.buffer));
             else
                 throw "Cannot stringify signature.";
-        }
+        };
 
         // Spreads hex/binary item array.
         this.spreadArrayField = (outputs) => {
             return protocol == protocols.json ? outputs : outputs.map(o => o.buffer);
-        }
+        };
 
         this.createUserChallengeResponse = (userChallenge, serverChallenge, msgProtocol) => {
             // For challenge response encoding HotPocket always uses json.
@@ -1087,8 +1090,8 @@
                 pubkey: this.binaryEncode(keys.publicKey),
                 server_challenge: serverChallenge,
                 protocol: msgProtocol
-            }
-        }
+            };
+        };
 
         // Creates a signed contract input components
         this.createContractInputComponents = (input, nonce, maxLedgerSeqNo) => {
@@ -1100,7 +1103,7 @@
                 input: this.serializeInput(input),
                 nonce: this.serializeNumber(nonce),
                 max_ledger_seq_no: this.serializeNumber(maxLedgerSeqNo)
-            }
+            };
 
             const serlializedInpContainer = this.serializeObject(inpContainer);
             const sigBytes = sodium.crypto_sign_detached(serlializedInpContainer, keys.privateKey.slice(1));
@@ -1113,8 +1116,8 @@
                 hash: inputHash,
                 container: serlializedInpContainer,
                 sig: sigBytes
-            }
-        }
+            };
+        };
 
         this.createContractInputMessage = (container, sig) => {
 
@@ -1122,8 +1125,8 @@
                 type: "contract_input",
                 input_container: container,
                 sig: this.binaryEncode(sig)
-            }
-        }
+            };
+        };
 
         this.createReadRequest = (request, id) => {
             if (request.length == 0)
@@ -1133,24 +1136,24 @@
                 type: "contract_read_request",
                 id: id,
                 content: this.serializeInput(request)
-            }
-        }
+            };
+        };
 
         this.createStatusRequest = () => {
             return { type: "stat" };
-        }
+        };
 
         this.createLclRequest = () => {
             return { type: "lcl" };
-        }
+        };
 
         this.createSubscriptionRequest = (channel, enabled) => {
             return {
                 type: "subscription",
                 channel: channel,
                 enabled: enabled
-            }
-        }
+            };
+        };
 
         this.createLedgerQuery = (filterBy, params, includeInputs, includeOutputs) => {
 
@@ -1164,8 +1167,8 @@
                 filter_by: filterBy,
                 params: params,
                 include: includes
-            }
-        }
+            };
+        };
 
         this.deserializeLedger = (l) => {
             return {
@@ -1178,8 +1181,8 @@
                 userHash: this.deserializeValue(l.user_hash),
                 inputHash: this.deserializeValue(l.input_hash),
                 outputHash: this.deserializeValue(l.output_hash)
-            }
-        }
+            };
+        };
 
         this.deserializeHealthEvent = (m) => {
             if (m.event === "proposal") {
@@ -1188,16 +1191,16 @@
                     commLatency: m.comm_latency,
                     readLatency: m.read_latency,
                     batchSize: m.batch_size
-                }
+                };
             }
             else if (m.event === "connectivity") {
                 return {
                     event: m.event,
                     peerCount: m.peer_count,
                     weaklyConnected: m.weakly_connected
-                }
+                };
             }
-        }
+        };
     }
 
     function hexToUint8Array(hexString) {
@@ -1229,19 +1232,19 @@
             if (!registrations[eventName])
                 registrations[eventName] = [];
             registrations[eventName].push(listener);
-        }
+        };
 
         this.emit = (eventName, ...value) => {
             if (registrations[eventName])
                 registrations[eventName].forEach(listener => listener(...value));
-        }
+        };
 
         this.clear = (eventName) => {
             if (eventName)
-                delete registrations[eventName]
+                delete registrations[eventName];
             else
                 Object.keys(registrations).forEach(k => delete registrations[k]);
-        }
+        };
     }
 
     // Set sodium reference.
@@ -1252,8 +1255,8 @@
                 sodium = window.sodium || await new Promise(resolve => {
                     window.sodium = {
                         onload: async (sodiumRef) => resolve(sodiumRef)
-                    }
-                })
+                    };
+                });
             }
         }
         else { // nodejs
@@ -1326,10 +1329,10 @@
                     // definitions to avoid complete initialization failure of Blake3 library on Mac/iOS.
 
                     if (typeof (BigUint64Array) === "undefined")
-                        BigUint64Array = function (v) { }
+                        BigUint64Array = function (v) { };
 
                     if (typeof (BigInt) === "undefined")
-                        BigInt = function (v) { }
+                        BigInt = function (v) { };
 
                     // Import the blake3 browser module at runtime.
                     const url = "https://cdn.jsdelivr.net/npm/blake3@2.1.4/browser-async.js";
