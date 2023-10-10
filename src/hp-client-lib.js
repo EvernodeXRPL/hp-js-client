@@ -375,6 +375,11 @@
             return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
         };
 
+        this.submitContractShellInput = (shellCommand, id = null) => {
+            id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
+            return getMultiConnectionResult(con => con.submitContractShellInput(shellCommand, id));
+        };
+
         this.getStatus = () => {
             return getMultiConnectionResult(con => con.getStatus());
         };
@@ -634,6 +639,10 @@
                     resolver.resolver(msgHelper.deserializeValue(m.content));
                     delete readRequestResolvers[requestId];
                 }
+            }
+            else if (m.type == "contract_shell_output") {
+                console.log("Contract Shell Output:")
+                console.log(m);
             }
             else if (m.type == "contract_input_status") {
                 const inputHashHex = msgHelper.stringifyValue(m.input_hash);
@@ -986,6 +995,16 @@
             });
         };
 
+        this.submitContractShellInput = (shellCommand, id) => {
+
+            if (connectionStatus != 2)
+                return Promise.resolve();
+
+            const msg = msgHelper.createShellInput(shellCommand, id);
+            wsSend(msgHelper.serializeObject(msg));
+            return Promise.resolve();
+        };
+
         this.subscribe = (channel) => {
             if (connectionStatus != 2)
                 return Promise.resolve();
@@ -1136,6 +1155,17 @@
                 type: "contract_read_request",
                 id: id,
                 content: this.serializeInput(request)
+            };
+        };
+
+        this.createShellInput = (shellCommand, id) => {
+            if (shellCommand.length == 0)
+                return null;
+
+            return {
+                type: "contract_shell_input",
+                id: id,
+                content: this.serializeInput(shellCommand)
             };
         };
 
