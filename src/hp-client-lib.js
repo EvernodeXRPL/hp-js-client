@@ -375,9 +375,9 @@
             return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
         };
 
-        this.submitContractShellInput = (shellCommand, id = null) => {
+        this.submitHpshRequest = (hpshCommand, id = null, timeout = 15000) => {
             id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
-            return getMultiConnectionResult(con => con.submitContractShellInput(shellCommand, id));
+            return getMultiConnectionResult(con => con.submitHpshRequest(hpshCommand, id, timeout));
         };
 
         this.getStatus = () => {
@@ -425,6 +425,7 @@
         let lclResponseResolvers = [];
         let contractInputResolvers = {}; // Contract input status-awaiting resolvers (keyed by input hash).
         let readRequestResolvers = {}; // Contract read request reply-awaiting resolvers (keyed by request id).
+        let hpshRequestResolvers = {}; // Hpsh reply-awaiting resolvers (keyed by request id).
         let ledgerQueryResolvers = {}; // Message resolvers that uses request/reply associations.
 
         // Calcualtes the blake3 hash of all array items.
@@ -640,9 +641,14 @@
                     delete readRequestResolvers[requestId];
                 }
             }
-            else if (m.type == "contract_shell_output") {
-                console.log("Contract Shell Output:")
-                console.log(m);
+            else if (m.type == "hpsh_response") {
+                const requestId = m.reply_for;
+                const resolver = hpshRequestResolvers[requestId];
+                if (resolver) {
+                    clearTimeout(resolver.timer);
+                    resolver.resolver(msgHelper.deserializeValue(m.content));
+                    delete hpshRequestResolvers[requestId];
+                }
             }
             else if (m.type == "contract_input_status") {
                 const inputHashHex = msgHelper.stringifyValue(m.input_hash);
@@ -846,6 +852,12 @@
             });
             readRequestResolvers = {};
 
+            Object.values(hpshRequestResolvers).forEach(resolver => {
+                clearTimeout(resolver.timer);
+                resolver.resolver(null);
+            });
+            hpshRequestResolvers = {};
+
             this.onClose && this.onClose();
             closeResolver && closeResolver();
         };
@@ -995,14 +1007,23 @@
             });
         };
 
-        this.submitContractShellInput = (shellCommand, id) => {
-
+        this.submitHpshRequest = (hpshCommand, id, timeout) => {
             if (connectionStatus != 2)
                 return Promise.resolve();
 
-            const msg = msgHelper.createShellInput(shellCommand, id);
-            wsSend(msgHelper.serializeObject(msg));
-            return Promise.resolve();
+            // Start waiting for this request's reply.
+            return new Promise(resolve => {
+
+                const timer = setTimeout(() => {
+                    resolve(null);
+                    delete hpshRequestResolvers[id];
+                }, timeout);
+
+                hpshRequestResolvers[id] = { resolver: resolve, timer: timer };
+
+                const msg = msgHelper.createHpshRequest(hpshCommand, id);
+                wsSend(msgHelper.serializeObject(msg));
+            });
         };
 
         this.subscribe = (channel) => {
@@ -1158,14 +1179,14 @@
             };
         };
 
-        this.createShellInput = (shellCommand, id) => {
-            if (shellCommand.length == 0)
+        this.createHpshRequest = (hpshCommand, id) => {
+            if (hpshCommand.length == 0)
                 return null;
 
             return {
-                type: "contract_shell_input",
+                type: "hpsh_request",
                 id: id,
-                content: this.serializeInput(shellCommand)
+                content: this.serializeInput(hpshCommand)
             };
         };
 
