@@ -375,9 +375,9 @@
             return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
         };
 
-        this.submitHpshRequest = (hpshCommand, id = null) => {
+        this.submitHpshRequest = (input, id = null) => {
             id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
-            return getMultiConnectionResult(con => con.submitHpshRequest(hpshCommand, id));
+            return getMultiConnectionResult(con => con.submitHpshRequest(input, id));
         };
 
         this.getStatus = () => {
@@ -426,6 +426,7 @@
         let contractInputResolvers = {}; // Contract input status-awaiting resolvers (keyed by input hash).
         let readRequestResolvers = {}; // Contract read request reply-awaiting resolvers (keyed by request id).
         let ledgerQueryResolvers = {}; // Message resolvers that uses request/reply associations.
+        let hpshRequestResolvers = {}; // Hpsh request status-awaiting resolvers (keyed by request id).
 
         // Calcualtes the blake3 hash of all array items.
         const getHash = (arr) => {
@@ -642,8 +643,15 @@
             }
             else if (m.type == "hpsh_response") {
                 const requestId = m.reply_for;
-                if (emitter)
-                    emitter.emit(requestId, msgHelper.deserializeValue(m.content));
+                if (emitter) {
+                    let result = {};
+                    if (m.status == "accepted")
+                        result.data = msgHelper.deserializeValue(m.content);
+                    else
+                        result.error = m.reason;
+
+                    emitter.emit(requestId, result);
+                }
             }
             else if (m.type == "contract_input_status") {
                 const inputHashHex = msgHelper.stringifyValue(m.input_hash);
