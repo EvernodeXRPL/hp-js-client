@@ -375,9 +375,9 @@
             return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
         };
 
-        this.submitHpshRequest = (hpshCommand, id = null, timeout = 15000) => {
+        this.submitHpshRequest = (hpshCommand, id = null) => {
             id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
-            return getMultiConnectionResult(con => con.submitHpshRequest(hpshCommand, id, timeout));
+            return getMultiConnectionResult(con => con.submitHpshRequest(hpshCommand, id));
         };
 
         this.getStatus = () => {
@@ -425,7 +425,6 @@
         let lclResponseResolvers = [];
         let contractInputResolvers = {}; // Contract input status-awaiting resolvers (keyed by input hash).
         let readRequestResolvers = {}; // Contract read request reply-awaiting resolvers (keyed by request id).
-        let hpshRequestResolvers = {}; // Hpsh reply-awaiting resolvers (keyed by request id).
         let ledgerQueryResolvers = {}; // Message resolvers that uses request/reply associations.
 
         // Calcualtes the blake3 hash of all array items.
@@ -643,12 +642,8 @@
             }
             else if (m.type == "hpsh_response") {
                 const requestId = m.reply_for;
-                const resolver = hpshRequestResolvers[requestId];
-                if (resolver) {
-                    clearTimeout(resolver.timer);
-                    resolver.resolver(msgHelper.deserializeValue(m.content));
-                    delete hpshRequestResolvers[requestId];
-                }
+                if (emitter)
+                    emitter.emit(requestId, msgHelper.deserializeValue(m.content));
             }
             else if (m.type == "contract_input_status") {
                 const inputHashHex = msgHelper.stringifyValue(m.input_hash);
@@ -852,12 +847,6 @@
             });
             readRequestResolvers = {};
 
-            Object.values(hpshRequestResolvers).forEach(resolver => {
-                clearTimeout(resolver.timer);
-                resolver.resolver(null);
-            });
-            hpshRequestResolvers = {};
-
             this.onClose && this.onClose();
             closeResolver && closeResolver();
         };
@@ -1007,23 +996,14 @@
             });
         };
 
-        this.submitHpshRequest = (hpshCommand, id, timeout) => {
+        this.submitHpshRequest = (hpshCommand, id) => {
             if (connectionStatus != 2)
-                return Promise.resolve();
+                throw "Connection error.";
 
-            // Start waiting for this request's reply.
-            return new Promise(resolve => {
+            const msg = msgHelper.createHpshRequest(hpshCommand, id);
+            wsSend(msgHelper.serializeObject(msg));
 
-                const timer = setTimeout(() => {
-                    resolve(null);
-                    delete hpshRequestResolvers[id];
-                }, timeout);
-
-                hpshRequestResolvers[id] = { resolver: resolve, timer: timer };
-
-                const msg = msgHelper.createHpshRequest(hpshCommand, id);
-                wsSend(msgHelper.serializeObject(msg));
-            });
+            return id;
         };
 
         this.subscribe = (channel) => {
