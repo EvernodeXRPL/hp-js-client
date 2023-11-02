@@ -6,7 +6,7 @@
     ],
     "homepage": "https://github.com/HotPocketDev/hp-js-client",
     "license": "MIT",
-    "version": "0.5.5",
+    "version": "0.5.6",
     "scripts": {
         "merge-browser": "rm -f -r dist ; mkdir -p dist && cp src/bson-browser.js dist/browser.js && cat src/hp-client-lib.js >> dist/browser.js",
         "minify-browser": "terser --compress --mangle reserved=['Binary','Buffer'] -- dist/browser.js > dist/browser.min.js",
