@@ -375,9 +375,9 @@
             return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
         };
 
-        this.submitHpshRequest = (input, id = null) => {
+        this.submitDebugShellRequest = (input, id = null) => {
             id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
-            return getMultiConnectionResult(con => con.submitHpshRequest(input, id));
+            return getMultiConnectionResult(con => con.submitDebugShellRequest(input, id));
         };
 
         this.getStatus = () => {
@@ -426,7 +426,7 @@
         let contractInputResolvers = {}; // Contract input status-awaiting resolvers (keyed by input hash).
         let readRequestResolvers = {}; // Contract read request reply-awaiting resolvers (keyed by request id).
         let ledgerQueryResolvers = {}; // Message resolvers that uses request/reply associations.
-        let hpshRequestResolvers = {}; // Hpsh request status-awaiting resolvers (keyed by request id).
+        let debugShellRequestResolvers = {}; // debug shell request status-awaiting resolvers (keyed by request id).
 
         // Calcualtes the blake3 hash of all array items.
         const getHash = (arr) => {
@@ -641,7 +641,7 @@
                     delete readRequestResolvers[requestId];
                 }
             }
-            else if (m.type == "hpsh_response") {
+            else if (m.type == "debug_shell_response") {
                 const requestId = m.reply_for;
                 if (emitter) {
                     let result = {};
@@ -1004,11 +1004,11 @@
             });
         };
 
-        this.submitHpshRequest = (hpshCommand, id) => {
+        this.submitDebugShellRequest = (debugShellCommand, id) => {
             if (connectionStatus != 2)
                 throw "Connection error.";
 
-            const msg = msgHelper.createHpshRequest(hpshCommand, id);
+            const msg = msgHelper.createDebugShellRequest(debugShellCommand, id);
             wsSend(msgHelper.serializeObject(msg));
 
             return id;
@@ -1167,14 +1167,14 @@
             };
         };
 
-        this.createHpshRequest = (hpshCommand, id) => {
-            if (hpshCommand.length == 0)
+        this.createDebugShellRequest = (debugShellCommand, id) => {
+            if (debugShellCommand.length == 0)
                 return null;
 
             return {
-                type: "hpsh_request",
+                type: "debug_shell_request",
                 id: id,
-                content: this.serializeInput(hpshCommand)
+                content: this.serializeInput(debugShellCommand)
             };
         };
 
