@@ -375,6 +375,11 @@
             return getMultiConnectionResult(con => con.submitContractReadRequest(request, id, timeout));
         };
 
+        this.submitDebugShellRequest = (input, id = null) => {
+            id = id ? id.toString() : new Date().getTime().toString(); // Generate request id if not specified.
+            return getMultiConnectionResult(con => con.submitDebugShellRequest(input, id));
+        };
+
         this.getStatus = () => {
             return getMultiConnectionResult(con => con.getStatus());
         };
@@ -421,6 +426,7 @@
         let contractInputResolvers = {}; // Contract input status-awaiting resolvers (keyed by input hash).
         let readRequestResolvers = {}; // Contract read request reply-awaiting resolvers (keyed by request id).
         let ledgerQueryResolvers = {}; // Message resolvers that uses request/reply associations.
+        let debugShellRequestResolvers = {}; // debug shell request status-awaiting resolvers (keyed by request id).
 
         // Calcualtes the blake3 hash of all array items.
         const getHash = (arr) => {
@@ -633,6 +639,18 @@
                     clearTimeout(resolver.timer);
                     resolver.resolver(msgHelper.deserializeValue(m.content));
                     delete readRequestResolvers[requestId];
+                }
+            }
+            else if (m.type == "debug_shell_response") {
+                const requestId = m.reply_for;
+                if (emitter) {
+                    let result = {};
+                    if (m.status == "accepted")
+                        result.data = msgHelper.deserializeValue(m.content);
+                    else
+                        result.error = m.reason;
+
+                    emitter.emit(requestId, result);
                 }
             }
             else if (m.type == "contract_input_status") {
@@ -986,6 +1004,16 @@
             });
         };
 
+        this.submitDebugShellRequest = (debugShellCommand, id) => {
+            if (connectionStatus != 2)
+                throw "Connection error.";
+
+            const msg = msgHelper.createDebugShellRequest(debugShellCommand, id);
+            wsSend(msgHelper.serializeObject(msg));
+
+            return id;
+        };
+
         this.subscribe = (channel) => {
             if (connectionStatus != 2)
                 return Promise.resolve();
@@ -1136,6 +1164,17 @@
                 type: "contract_read_request",
                 id: id,
                 content: this.serializeInput(request)
+            };
+        };
+
+        this.createDebugShellRequest = (debugShellCommand, id) => {
+            if (debugShellCommand.length == 0)
+                return null;
+
+            return {
+                type: "debug_shell_request",
+                id: id,
+                content: this.serializeInput(debugShellCommand)
             };
         };
 
