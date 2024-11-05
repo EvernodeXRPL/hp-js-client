@@ -12,7 +12,7 @@
         "minify-browser": "terser --compress --mangle reserved=['Binary','Buffer'] -- dist/browser.js > dist/browser.min.js",
         "build-browser": "npm run merge-browser && npm run minify-browser",
         "build-node": " mkdir -p dist && cp src/hp-client-lib.js dist/index.js && cp npm-readme.md dist/README.md && ./clean-pkg.sh && cp evernode-license.pdf dist/",
-        "publish": "npm run build-browser && npm run build-node && npm publish ./dist --tag beta"
+        "publish": "npm run build-browser && npm run build-node && npm publish ./dist"
     },
     "dependencies": {
         "libsodium-wrappers": "0.7.9",
