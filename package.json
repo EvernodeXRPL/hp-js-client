@@ -6,7 +6,7 @@
     ],
     "homepage": "https://github.com/HotPocketDev/hp-js-client",
     "license": "SEE LICENSE IN https://raw.githubusercontent.com/EvernodeXRPL/evernode-resources/main/license/evernode-license.pdf",
-    "version": "0.5.7-beta-0.1",
+    "version": "0.5.7",
     "scripts": {
         "merge-browser": "rm -f -r dist ; mkdir -p dist && cp src/bson-browser.js dist/browser.js && cat src/hp-client-lib.js >> dist/browser.js && cp evernode-license.pdf dist/",
         "minify-browser": "terser --compress --mangle reserved=['Binary','Buffer'] -- dist/browser.js > dist/browser.min.js",
